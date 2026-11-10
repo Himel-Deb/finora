@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:finora/core/constants/app_size.dart';
 import 'package:finora/core/constants/app_string.dart';
 import 'package:finora/core/theme/app_colors.dart';
 import 'package:finora/core/theme/app_text_style.dart';
+import 'package:finora/feature/transaction/presentation/pages/add_transaction_page.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
@@ -26,7 +26,15 @@ class QuickActions extends StatelessWidget {
                 label: AppStrings.addTransaction,
                 icon: Icons.add_rounded,
                 color: AppColors.primary,
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const AddTransactionPage(),
+                    ),
+                  );
+                },
               ),
             ),
             Expanded(
@@ -77,9 +85,7 @@ class _QuickActionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(
-        AppSizes.radiusLg,
-      ),
+      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: AppSizes.spacingSm,
