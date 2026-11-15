@@ -1,10 +1,14 @@
-import 'package:finora/feature/home/presentation/widgets/expence_overview.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:finora/core/constants/app_size.dart';
 import 'package:finora/core/constants/app_string.dart';
 import 'package:finora/core/theme/app_text_style.dart';
+
 import 'package:finora/feature/transaction/presentation/pages/transaction_list_page.dart';
+import 'package:finora/feature/categories/presentation/pages/category_list_page.dart';
+import 'package:finora/feature/home/presentation/pages/more_page.dart';
+import 'package:finora/feature/home/presentation/widgets/expence_overview.dart';
 
 import '../widgets/balance_card.dart';
 import '../widgets/quick_actions.dart';
@@ -24,53 +28,63 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppStrings.appName,
-          style: AppTextStyles.title,
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSizes.spacingMd),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppStrings.dashboardTitle,
-              style: AppTextStyles.heading,
+      appBar: _currentIndex == 0
+          ? AppBar(
+              title: Text(
+                AppStrings.appName,
+                style: AppTextStyles.title,
+              ),
+            )
+          : null,
+
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          // Home
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.spacingMd),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.dashboardTitle,
+                  style: AppTextStyles.heading,
+                ),
+                const SizedBox(height: AppSizes.spacingSm),
+                Text(
+                  AppStrings.dashboardSubtitle,
+                  style: AppTextStyles.body,
+                ),
+                const SizedBox(height: AppSizes.spacingLg),
+                const BalanceCard(),
+                const SizedBox(height: AppSizes.spacingLg),
+                const QuickActions(),
+                const SizedBox(height: AppSizes.spacingLg),
+                const ExpenseOverview(),
+                const SizedBox(height: AppSizes.spacingLg),
+                const RecentTransactions(),
+                const SizedBox(height: AppSizes.spacingLg),
+              ],
             ),
-            const SizedBox(height: AppSizes.spacingSm),
-            Text(
-              AppStrings.dashboardSubtitle,
-              style: AppTextStyles.body,
-            ),
-            const SizedBox(height: AppSizes.spacingLg),
-            const BalanceCard(),
-            const SizedBox(height: AppSizes.spacingLg),
-            const QuickActions(),
-            const SizedBox(height: AppSizes.spacingLg),
-            const ExpenseOverview(),
-            const SizedBox(height: AppSizes.spacingLg),
-            const RecentTransactions(),
-            const SizedBox(height: AppSizes.spacingLg),
-          ],
-        ),
+          ),
+
+          // Transactions
+          const TransactionListPage(),
+
+          // Categories
+          const CategoryListPage(),
+
+          // More
+          const MorePage(),
+        ],
       ),
+
       bottomNavigationBar: HomeBottomNav(
         currentIndex: _currentIndex,
         onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const TransactionListPage(),
-              ),
-            );
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
+          setState(() {
+            _currentIndex = index;
+          });
         },
       ),
     );

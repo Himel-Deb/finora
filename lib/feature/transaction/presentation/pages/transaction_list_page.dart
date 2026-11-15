@@ -1,20 +1,25 @@
-import 'package:finora/feature/transaction/logic/event/transaction_list_event.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:finora/feature/transaction/data/models/transaction_model.dart';
 import 'package:finora/feature/transaction/logic/bloc/transaction_list_bloc.dart';
+import 'package:finora/feature/transaction/logic/event/transaction_list_event.dart';
 import 'package:finora/feature/transaction/logic/states/transaction_list_state.dart';
+
+import 'package:finora/feature/transaction/presentation/pages/add_transaction_page.dart';
 
 class TransactionListPage extends StatefulWidget {
   const TransactionListPage({super.key});
 
   @override
-  State<TransactionListPage> createState() => _TransactionListPageState();
+  State<TransactionListPage> createState() =>
+      _TransactionListPageState();
 }
 
 class _TransactionListPageState extends State<TransactionListPage> {
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController =
+      TextEditingController();
 
   String _searchQuery = '';
   String _selectedFilter = 'All';
@@ -25,38 +30,105 @@ class _TransactionListPageState extends State<TransactionListPage> {
     super.dispose();
   }
 
+  Future<void> _editTransaction(
+    BuildContext context,
+    TransactionModel transaction,
+  ) async {
+    final updated = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTransactionPage(
+          transaction: transaction,
+        ),
+      ),
+    );
+
+    if (updated == true && context.mounted) {
+      context.read<TransactionListBloc>().add(
+            const LoadTransactions(),
+          );
+    }
+  }
+
+  Future<void> _deleteTransaction(
+    BuildContext context,
+    TransactionModel transaction,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Transaction?'),
+          content: const Text(
+            'Are you sure you want to delete this transaction?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<TransactionListBloc>().add(
+            DeleteTransaction(transaction.id),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          TransactionListBloc(context.read())..add(const LoadTransactions()),
+          TransactionListBloc(context.read())
+            ..add(const LoadTransactions()),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Transactions')),
+        appBar: AppBar(
+          title: const Text('Transactions'),
+        ),
         body: BlocBuilder<TransactionListBloc, TransactionListState>(
           builder: (context, state) {
             if (state.status == TransactionListStatus.loading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
             }
 
             if (state.status == TransactionListStatus.failure) {
               return Center(
-                child: Text(state.errorMessage ?? 'Something went wrong'),
+                child: Text(
+                  state.errorMessage ?? 'Something went wrong',
+                ),
               );
             }
 
-            final filteredTransactions = state.transactions.where((
-              transaction,
-            ) {
+            final filteredTransactions =
+                state.transactions.where((transaction) {
               final matchesSearch =
-                  transaction.categoryId.toLowerCase().contains(_searchQuery) ||
-                  (transaction.note ?? '').toLowerCase().contains(_searchQuery);
+                  transaction.categoryId
+                          .toLowerCase()
+                          .contains(_searchQuery) ||
+                      (transaction.note ?? '')
+                          .toLowerCase()
+                          .contains(_searchQuery);
 
               final matchesFilter =
                   _selectedFilter == 'All' ||
-                  (_selectedFilter == 'Income' &&
-                      transaction.type == TransactionType.income) ||
-                  (_selectedFilter == 'Expense' &&
-                      transaction.type == TransactionType.expense);
+                      (_selectedFilter == 'Income' &&
+                          transaction.type == TransactionType.income) ||
+                      (_selectedFilter == 'Expense' &&
+                          transaction.type == TransactionType.expense);
 
               return matchesSearch && matchesFilter;
             }).toList();
@@ -74,6 +146,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
+
                           setState(() {
                             _searchQuery = '';
                           });
@@ -90,12 +163,17 @@ class _TransactionListPageState extends State<TransactionListPage> {
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
                   child: Row(
-                    children: ['All', 'Income', 'Expense'].map((filter) {
+                    children: ['All', 'Income', 'Expense']
+                        .map((filter) {
                       return Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                          ),
                           child: ChoiceChip(
                             label: Text(filter),
                             selected: _selectedFilter == filter,
@@ -117,25 +195,31 @@ class _TransactionListPageState extends State<TransactionListPage> {
                   child: RefreshIndicator(
                     onRefresh: () async {
                       context.read<TransactionListBloc>().add(
-                        const LoadTransactions(),
-                      );
+                            const LoadTransactions(),
+                          );
                     },
                     child: filteredTransactions.isEmpty
                         ? ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
+                            physics:
+                                const AlwaysScrollableScrollPhysics(),
                             children: const [
                               SizedBox(height: 150),
-                              Center(child: Text('No transactions found')),
+                              Center(
+                                child: Text('No transactions found'),
+                              ),
                             ],
                           )
                         : ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
+                            physics:
+                                const AlwaysScrollableScrollPhysics(),
                             itemCount: filteredTransactions.length,
                             itemBuilder: (context, index) {
-                              final transaction = filteredTransactions[index];
+                              final transaction =
+                                  filteredTransactions[index];
 
                               final isIncome =
-                                  transaction.type == TransactionType.income;
+                                  transaction.type ==
+                                      TransactionType.income;
 
                               return ListTile(
                                 leading: CircleAvatar(
@@ -143,13 +227,21 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                     isIncome
                                         ? Icons.arrow_downward
                                         : Icons.arrow_upward,
-                                    color: isIncome ? Colors.green : Colors.red,
+                                    color: isIncome
+                                        ? Colors.green
+                                        : Colors.red,
                                   ),
                                 ),
-                                title: Text(transaction.categoryId),
-                                subtitle: Text(
-                                  transaction.note ?? 'No description',
+
+                                title: Text(
+                                  transaction.categoryId,
                                 ),
+
+                                subtitle: Text(
+                                  transaction.note ??
+                                      'No description',
+                                ),
+
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -162,56 +254,30 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
+
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        color: Colors.blue,
+                                      ),
+                                      onPressed: () {
+                                        _editTransaction(
+                                          context,
+                                          transaction,
+                                        );
+                                      },
+                                    ),
+
                                     IconButton(
                                       icon: const Icon(
                                         Icons.delete_outline,
                                         color: Colors.red,
                                       ),
-                                      onPressed: () async {
-                                        final confirmed = await showDialog<bool>(
-                                          context: context,
-                                          builder: (dialogContext) {
-                                            return AlertDialog(
-                                              title: const Text(
-                                                'Delete Transaction?',
-                                              ),
-                                              content: const Text(
-                                                'Are you sure you want to delete this transaction?',
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(
-                                                      dialogContext,
-                                                      false,
-                                                    );
-                                                  },
-                                                  child: const Text('Cancel'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(
-                                                      dialogContext,
-                                                      true,
-                                                    );
-                                                  },
-                                                  child: const Text('Delete'),
-                                                ),
-                                              ],
-                                            );
-                                          },
+                                      onPressed: () {
+                                        _deleteTransaction(
+                                          context,
+                                          transaction,
                                         );
-
-                                        if (confirmed == true &&
-                                            context.mounted) {
-                                          context
-                                              .read<TransactionListBloc>()
-                                              .add(
-                                                DeleteTransaction(
-                                                  transaction.id,
-                                                ),
-                                              );
-                                        }
                                       },
                                     ),
                                   ],

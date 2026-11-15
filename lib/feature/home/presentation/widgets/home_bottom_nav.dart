@@ -1,7 +1,5 @@
 
 import 'package:flutter/material.dart';
-
-import 'package:finora/core/constants/app_size.dart';
 import 'package:finora/core/theme/app_colors.dart';
 
 class HomeBottomNav extends StatelessWidget {
@@ -35,14 +33,14 @@ class HomeBottomNav extends StatelessWidget {
           label: 'Transactions',
         ),
         NavigationDestination(
-          icon: Icon(Icons.bar_chart_outlined),
-          selectedIcon: Icon(Icons.bar_chart_rounded),
-          label: 'Statistics',
+          icon: Icon(Icons.category_outlined),
+          selectedIcon: Icon(Icons.category_rounded),
+          label: 'Categories',
         ),
         NavigationDestination(
-          icon: Icon(Icons.person_outline_rounded),
-          selectedIcon: Icon(Icons.person_rounded),
-          label: 'Profile',
+          icon: Icon(Icons.menu_rounded),
+          selectedIcon: Icon(Icons.menu_open_rounded),
+          label: 'More',
         ),
       ],
     );

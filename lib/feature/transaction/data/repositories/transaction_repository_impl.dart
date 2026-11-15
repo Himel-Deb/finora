@@ -22,4 +22,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> deleteTransaction(String id) async {
     await TransactionBox.deleteTransaction(id);
   }
+
+
+  @override
+Future<void> updateTransaction(TransactionModel transaction) async {
+  await TransactionBox.saveTransaction(transaction);
+}
 }

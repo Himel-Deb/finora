@@ -12,6 +12,7 @@ class TransactionListBloc
       : super(const TransactionListState()) {
     on<LoadTransactions>(_onLoadTransactions);
     on<DeleteTransaction>(_onDeleteTransaction);
+    on<UpdateTransaction>(_onUpdateTransaction);
   }
 
   Future<void> _onLoadTransactions(
@@ -41,7 +42,7 @@ class TransactionListBloc
         ),
       );
     }
-  }
+  } 
 
   Future<void> _onDeleteTransaction(
     DeleteTransaction event,
@@ -70,4 +71,37 @@ class TransactionListBloc
       );
     }
   }
+
+  Future<void> _onUpdateTransaction(
+  UpdateTransaction event,
+  Emitter<TransactionListState> emit,
+) async {
+  try {
+    await repository.updateTransaction(event.transaction);
+
+    final updatedTransactions = state.transactions.map((item) {
+      return item.id == event.transaction.id
+          ? event.transaction
+          : item;
+    }).toList();
+
+    emit(
+      TransactionListState(
+        status: TransactionListStatus.success,
+        transactions: updatedTransactions,
+      ),
+    );
+  } catch (e) {
+    emit(
+      TransactionListState(
+        status: TransactionListStatus.failure,
+        transactions: state.transactions,
+        errorMessage: e.toString(),
+      ),
+    );
+  }
+}
+
+
+
 }
