@@ -1,3 +1,4 @@
+import 'package:finora/feature/auth/data/models/user_model.dart';
 import 'package:finora/feature/budgets/data/models/budget_model.dart';
 import 'package:finora/feature/categories/data/default_categories.dart';
 import 'package:finora/feature/categories/data/models/category_model.dart';
@@ -19,6 +20,7 @@ Future<void> main() async {
   Hive.registerAdapter(CategoryModelAdapter());
   Hive.registerAdapter(WalletModelAdapter());
   Hive.registerAdapter(BudgetModelAdapter());
+  Hive.registerAdapter(UserModelAdapter());
 
   await DefaultWallets.initialize();
   await DefaultCategories.initialize();
